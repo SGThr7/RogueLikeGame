@@ -1,4 +1,4 @@
-﻿namespace RogueLikeGame
+namespace RogueLikeGame
 {
 	interface IKeyInput
 	{
@@ -13,6 +13,6 @@
 
 	interface ICharacter : IPosition
 	{
-		char Simbol { get; }
+		char Symbol { get; }
 	}
 }

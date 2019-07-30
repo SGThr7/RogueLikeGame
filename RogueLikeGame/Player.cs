@@ -1,10 +1,10 @@
-﻿namespace RogueLikeGame
+namespace RogueLikeGame
 {
 	class Player : IKeyInput, ICharacter
 	{
 		public int X { get; set; } = 0;
 		public int Y { get; set; } = 0;
-		public char Simbol { get; } = '@';
+		public char Symbol { get; } = '@';
 		private readonly MoveComponent move;
 
 		public Player()

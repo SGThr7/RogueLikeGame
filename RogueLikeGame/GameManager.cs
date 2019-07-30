@@ -1,25 +1,31 @@
-﻿using System;
+using System;
 
 namespace RogueLikeGame
 {
-	class GameManager
+	static class GameManager
 	{
-		public Player Player { get; } = new Player();
+		public static Player Player { get; private set; }
 
 		static void Main(string[] args)
 		{
-			var game = new GameManager();
+			Initialize();
+			Start();
 		}
 
-		public GameManager()
+		public static void Initialize()
 		{
 			Console.CursorVisible = false;
-			Renderer.Render(this);
+			Player = new Player();
+			Renderer.RenderFull();
+		}
+
+		public static void Start()
+		{
 			for (; ; )
 			{
 				var keyInfo = Console.ReadKey(true);
 				var p = Player.Move(keyInfo.KeyChar);
-				Renderer.Render(this);
+				Renderer.Render();
 			}
 		}
 	}

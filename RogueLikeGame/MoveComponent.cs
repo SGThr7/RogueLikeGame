@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace RogueLikeGame
 {
@@ -16,16 +16,15 @@ namespace RogueLikeGame
 			int xDiff = -1 * (int)Math.Round(distance * Math.Sin(angle), MidpointRounding.AwayFromZero);
 			int yDiff = -1 * (int)Math.Round(distance * Math.Cos(angle), MidpointRounding.AwayFromZero);
 
-			const int xMax = 100;
+			(int width, int height)= MapManager.GetCurrentMapSize();
 			if (this.position.X + xDiff < 0)
 				xDiff = -(this.position.X + xDiff) - 1;
-			else if (this.position.X + xDiff > xMax)
-				xDiff = -(this.position.X + xDiff - xMax) + 1;
-			const int yMax = 30;
+			else if (this.position.X + xDiff >= width)
+				xDiff = -(this.position.X + xDiff - width);
 			if (this.position.Y + yDiff < 0)
 				yDiff = -(this.position.Y + yDiff) - 1;
-			else if (this.position.Y + yDiff > yMax)
-				yDiff = -(this.position.Y + yDiff - yMax) + 1;
+			else if (this.position.Y + yDiff >= height)
+				yDiff = -(this.position.Y + yDiff - height);
 
 			if (xDiff == 0 && yDiff == 0)
 			{
