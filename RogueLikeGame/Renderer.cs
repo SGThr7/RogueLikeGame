@@ -24,26 +24,34 @@ namespace RogueLikeGame
 				return;
 			}
 
-			var text = sb.ToString();
+			var image = sb.ToString();
 			var diffIndexes = new List<int>();
-			if (text.Length != buff.Length)
+			if (image.Length != buff.Length)
+			{
 				Render(sb.ToString());
-			for (int i = 0; i < text.Length; i++)
-				if (text[i] != buff[i])
+			}
+
+			for (int i = 0; i < image.Length; i++)
+			{
+				if (image[i] != buff[i])
+				{
 					diffIndexes.Add(i);
+				}
+			}
+
 			(int w, int h) = MapManager.GetCurrentMapSize();
 			foreach (int i in diffIndexes)
 			{
-				int y = i / w;
-				int x = i - y * w;
+				int y = i / (w + 2);
+				int x = i - y * (w + 2) ;
 				try
 				{
 					Console.SetCursorPosition(x, y);
-					Console.Write(text[i]);
+					Console.Write(image[i]);
 				}
 				catch (ArgumentOutOfRangeException) { continue; }
 			}
-			buff = text;
+			buff = image;
 		}
 
 		public static void Render(string image)
@@ -63,23 +71,21 @@ namespace RogueLikeGame
 		{
 			int index = (MapManager.GetCurrentMapSize().Width + 2) * GameManager.Player.Y + GameManager.Player.X;
 			sb.Remove(index, 1).Insert(index, GameManager.Player.Symbol);
-			//Console.SetCursorPosition(GameManager.Player.X, GameManager.Player.Y);
-			//Console.Write(GameManager.Player.Symbol);
 		}
 
 		static void DrawMapFull(ref StringBuilder sb)
 		{
-			var map = MapManager.GetCurrentMap();
+			var map = MapManager.CurrentMap;
 			(int width, int height) = map.Size;
-			//var sb = new StringBuilder();
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
+				{
 					sb.Append(map.GetMapSprite(x, y));
+				}
+
 				sb.AppendLine();
 			}
-			//Console.SetCursorPosition(0, 0);
-			//Console.WriteLine(sb.ToString());
 		}
 	}
 }
