@@ -16,15 +16,22 @@ namespace RogueLikeGame
 			int xDiff = -1 * (int)Math.Round(distance * Math.Sin(angle), MidpointRounding.AwayFromZero);
 			int yDiff = -1 * (int)Math.Round(distance * Math.Cos(angle), MidpointRounding.AwayFromZero);
 
-			(int width, int height)= MapManager.GetCurrentMapSize();
-			if (this.position.X + xDiff < 0)
-				xDiff = -(this.position.X + xDiff) - 1;
-			else if (this.position.X + xDiff >= width)
-				xDiff = -(this.position.X + xDiff - width);
-			if (this.position.Y + yDiff < 0)
-				yDiff = -(this.position.Y + yDiff) - 1;
-			else if (this.position.Y + yDiff >= height)
-				yDiff = -(this.position.Y + yDiff - height);
+			(int x, int y) = (this.position.X, this.position.Y);
+			Map map = MapManager.CurrentMap;
+			if (!map.GetMapSprite(x + xDiff, y).CanWalk)
+			{
+				xDiff = 0;
+			}
+
+			if (!map.GetMapSprite(x, y + yDiff).CanWalk)
+			{
+				yDiff = 0;
+			}
+
+			if (!map.GetMapSprite(x + xDiff, y + yDiff).CanWalk)
+			{
+				xDiff = yDiff = 0;
+			}
 
 			if (xDiff == 0 && yDiff == 0)
 			{

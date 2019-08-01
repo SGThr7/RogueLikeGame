@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RogueLikeGame
 {
@@ -7,21 +8,40 @@ namespace RogueLikeGame
 	{
 		private static List<Map> maps = new List<Map>();
 		public static int CurrentMapNumber => maps.Count;
-		public static Map GetCurrentMap()
+		public static Map CurrentMap
 		{
-			if (CurrentMapNumber <= 0)
-				Generate(100, 30);
-			return maps[CurrentMapNumber - 1];
+			get
+			{
+				if (CurrentMapNumber <= 0)
+				{
+					Generate();
+				} 
+				return maps[CurrentMapNumber - 1];
+			}
 		}
-		public static (int Width, int Height) GetCurrentMapSize() => GetCurrentMap().Size;
+
+		public static (int Width, int Height) GetCurrentMapSize() => CurrentMap.Size;
 		public static Map GetMap(int index) => maps[index];
+
+		public static void Generate()
+		{
+			Generate(100, 30);
+		}
 
 		public static void Generate(int width, int height)
 		{
-			var map = new Map(width, height);
-			for (int y = 0; y < height; y++)
+			var sprites = new List<MapSprite> {
+					  new MapSprite(MapSprite.Type.Wall, '#'),
+					  new MapSprite(MapSprite.Type.Floor, '.'),
+					  new MapSprite(MapSprite.Type.Floor, '8')
+				  };
+			var map = new Map(width, height, sprites);
+			map.GenerateRoomRandom();
+			for (int i = 0; i < 10; i++)
 			{
-				map.SetMapData(y, y, 1);
+				(int X, int Y) pos = map.GetRandomPoint(MapSprite.Type.Floor);
+				//map.SetMapData(pos, 3);
+				map[pos] = 3;
 			}
 			maps.Add(map);
 		}
@@ -29,74 +49,140 @@ namespace RogueLikeGame
 
 	class Map
 	{
-		private static readonly char unknownSprite = '_';
-		private readonly int[,] map;
-		public char[] Sprites { get; private set; }
+		private readonly int[] map;
+		private readonly MapSprites mapSprites = new MapSprites();
+		public int Width { get; }
+		public int Height { get; }
+		public (int Width, int Height) Size => (Width, Height);
 
-		public Map(int width, int height, char[] sprites)
+		public Map(int width, int height, List<MapSprite> sprites)
 		{
-			this.map = new int[height, width];
-			Sprites = sprites;
-			(int w, int h) = Size;
-			GenerateWall(0, 0, w - 1, h - 1);
+			this.map = new int[width * height];
+			Width = width;
+			Height = height;
+			this.mapSprites.Add(sprites);
 		}
-
-		public Map(int width, int height) : this(width, height, new char[] { ' ', '#', '.' })
+		public Map(int width, int height)
+			: this(width,
+				  height,
+				  new List<MapSprite> {
+					  new MapSprite(MapSprite.Type.Wall, '#'),
+					  new MapSprite(MapSprite.Type.Floor, '.')
+				  })
 		{
 		}
-
 		public Map(int size) : this(size, size)
 		{
 		}
-
-		public Map(int size, char[] sprites) : this(size, size, sprites)
+		public Map(int size, List<MapSprite> sprites) : this(size, size, sprites)
 		{
 		}
-
-		public int Width => this.map.GetLength(1);
-		public int Height => this.map.GetLength(0);
-		public (int Width, int Height) Size => (Width, Height);
-		public int GetMapData(int left, int top)
+		public int this[int x, int y]
 		{
-			try { ValidPoint(left, top); }
-			catch (Exception) { return -1; }
-			return this.map[top, left];
+			get
+			{
+				if (x < 0 || x >= Width || y < 0 || y >= Height)
+					return -1;
+				//throw new IndexOutOfRangeException();
+				return this.map[(y * Width) + x];
+			}
+			set
+			{
+				if (x < 0 || x >= Width || y < 0 || y >= Height)
+					throw new IndexOutOfRangeException();
+				this.map[y * Width + x] = value;
+			}
+		}
+		public int this[(int x, int y) position]
+		{
+			get { return this[position.x, position.y]; }
+			set { this[position.x, position.y] = value; }
 		}
 
-		public char GetMapSprite(int left, int top)
-		{
-			int data = GetMapData(left, top);
-			if (data < 0 || Sprites.Length <= data)
-				return unknownSprite;
-			return Sprites[GetMapData(left, top)];
-		}
+		public MapSprite GetMapSprite(int left, int top) =>
+			this.mapSprites[this[left, top]];
 
-		public void SetMapData(int left, int top, int data)
+		public void ReplaceMapData(int source, int target)
 		{
-			try { ValidPoint(left, top); }
-			catch (Exception) { throw; }
-
-			this.map[top, left] = data;
+			for (int y = 0; y < Height; y++)
+			{
+				for (int x = 0; x < Width; x++)
+				{
+					if (this[x, y] == source)
+					{
+						this[x, y] = target;
+					}
+				}
+			}
 		}
 
 		public void ValidPoint(int left, int top)
 		{
 			if (top < 0 || Height <= top || left < 0 || Width <= left)
+			{
 				throw new Exception($"({left}, {top}) is out of map.");
+			}
 		}
 
 		public void GenerateWall(int left, int top, int width, int height)
 		{
-			for (int i = left; i <= width; i++)
+			int wall = this.mapSprites.GetID(MapSprite.Type.Wall);
+			for (int i = 0; i < width; i++)
 			{
-				SetMapData(i, top, 1);
-				SetMapData(i, height, 1);
+				this[left + i, top] = wall;
+				this[left + i, top + height - 1] = wall;
 			}
-			for (int i = top + 1; i <= height - 1; i++)
+			for (int i = 0; i < height; i++)
 			{
-				SetMapData(left, i, 1);
-				SetMapData(width, i, 1);
+				this[left, top + i] = wall;
+				this[left + width - 1, top + i] = wall;
 			}
+		}
+
+		public void GenerateRoom(int left, int top, int width, int height)
+		{
+			GenerateWall(left, top, width, height);
+			for (int y = 1; y < height - 1; y++)
+			{
+				for (int x = 1; x < width - 1; x++)
+				{
+					this[left + x, top + y] = this.mapSprites.GetID(MapSprite.Type.Floor);
+				}
+			}
+		}
+
+		public void GenerateRoom(int left, int top, int size)
+		{
+			GenerateRoom(left, top, size, size);
+		}
+
+		public void GenerateRoomRandom()
+		{
+			int x = GameManager.random.Next(0, Width - 3);
+			int y = GameManager.random.Next(Height - 3);
+			int size = GameManager.random.Next(3, Math.Min(Width - x + 1, Height - y + 1));
+			GenerateRoom(x, y, size);
+		}
+
+		public IEnumerable<(int X, int Y)> FindSprite(MapSprite.Type type)
+		{
+			for (int y = 0; y < Height; y++)
+			{
+				for (int x = 0; x < Width; x++)
+				{
+					if (this.mapSprites[this[x,y]].Is(type))
+					{
+						yield return (x, y);
+					}
+				}
+			}
+		}
+
+		public (int X, int Y) GetRandomPoint(MapSprite.Type type)
+		{
+			IEnumerable<(int X, int Y)> spritePositions = FindSprite(type);
+			int random = GameManager.random.Next(spritePositions.Count());
+			return spritePositions.Index(random);
 		}
 	}
 }

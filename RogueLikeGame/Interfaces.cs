@@ -11,7 +11,11 @@ namespace RogueLikeGame
 		int Y { get; set; }
 	}
 
-	interface ICharacter : IPosition
+	interface ICharacter : IPosition, ISprite
+	{
+	}
+
+	interface ISprite
 	{
 		char Symbol { get; }
 	}

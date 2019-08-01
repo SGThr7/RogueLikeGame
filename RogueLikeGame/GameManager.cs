@@ -4,6 +4,7 @@ namespace RogueLikeGame
 {
 	static class GameManager
 	{
+		public static Random random = new Random();
 		public static Player Player { get; private set; }
 
 		static void Main(string[] args)
@@ -16,6 +17,7 @@ namespace RogueLikeGame
 		{
 			Console.CursorVisible = false;
 			Player = new Player();
+			Player.RandomTeleport();
 			Renderer.RenderFull();
 		}
 
@@ -25,7 +27,12 @@ namespace RogueLikeGame
 			{
 				var keyInfo = Console.ReadKey(true);
 				var p = Player.Move(keyInfo.KeyChar);
-				Renderer.Render();
+				if (keyInfo.KeyChar == ';')
+				{
+					MapManager.Generate();
+					Player.RandomTeleport();
+				}
+				Renderer.Render(true);
 			}
 		}
 	}
