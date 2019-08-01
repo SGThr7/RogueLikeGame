@@ -15,7 +15,7 @@ namespace RogueLikeGame
 				if (CurrentMapNumber <= 0)
 				{
 					Generate();
-				} 
+				}
 				return maps[CurrentMapNumber - 1];
 			}
 		}
@@ -33,14 +33,14 @@ namespace RogueLikeGame
 			var sprites = new List<MapSprite> {
 					  new MapSprite(MapSprite.Type.Wall, '#'),
 					  new MapSprite(MapSprite.Type.Floor, '.'),
-					  new MapSprite(MapSprite.Type.Floor, '8')
+					  new MapSprite(MapSprite.Type.Floor, '.')
 				  };
 			var map = new Map(width, height, sprites);
 			map.GenerateRoomRandom();
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 1; i++)
 			{
-				(int X, int Y) pos = map.GetRandomPoint(MapSprite.Type.Floor);
-				//map.SetMapData(pos, 3);
+				//(int X, int Y) pos = map.GetRandomPoint(map.mapSprites.GetSpriteID(MapSprite.Type.Wall));
+				(int X, int Y) pos = map.GetRandomWall();
 				map[pos] = 3;
 			}
 			maps.Add(map);
@@ -50,10 +50,11 @@ namespace RogueLikeGame
 	class Map
 	{
 		private readonly int[] map;
-		private readonly MapSprites mapSprites = new MapSprites();
+		public readonly MapSprites mapSprites = new MapSprites();
 		public int Width { get; }
 		public int Height { get; }
 		public (int Width, int Height) Size => (Width, Height);
+		private const int MinimumRoomSize = 4;
 
 		public Map(int width, int height, List<MapSprite> sprites)
 		{
@@ -81,16 +82,14 @@ namespace RogueLikeGame
 		{
 			get
 			{
-				if (x < 0 || x >= Width || y < 0 || y >= Height)
-					return -1;
-				//throw new IndexOutOfRangeException();
-				return this.map[(y * Width) + x];
+				if (0 <= x && x < Width && 0 <= y && y < Height)
+					return this.map[(y * Width) + x];
+				return -1;
 			}
 			set
 			{
-				if (x < 0 || x >= Width || y < 0 || y >= Height)
-					throw new IndexOutOfRangeException();
-				this.map[y * Width + x] = value;
+				if (0 <= x && x < Width && 0 <= y && y < Height)
+					this.map[(y * Width) + x] = value;
 			}
 		}
 		public int this[(int x, int y) position]
@@ -99,8 +98,47 @@ namespace RogueLikeGame
 			set { this[position.x, position.y] = value; }
 		}
 
+		public (int X, int Y) GetPosition(int index) =>
+			(index % Width, index / Width);
+
 		public MapSprite GetMapSprite(int left, int top) =>
 			this.mapSprites[this[left, top]];
+
+		public (int X, int Y) GetRandomPoint(MapSprite.Type type)
+		{
+			List<int> ids = this.mapSprites.GetSpriteIDs(type);
+			var indexes = this.map.Indexed().Where(t => ids.Contains(t.item));
+			int random = GameManager.random.Next(indexes.Count());
+			return GetPosition(indexes.ElementAt(random).index);
+		}
+
+		public (int X, int Y) GetRandomPoint(int id)
+		{
+			var indexes = this.map.Indexed().Where(t => t.item == id);
+			if (indexes.Count() < 1) return (-1, -1);
+			int random = GameManager.random.Next(indexes.Count());
+			return GetPosition(indexes.ElementAt(random).index);
+		}
+
+		public (int X, int Y) GetRandomWall()
+		{
+			while (true)
+			{
+				var point = GetRandomPoint(MapSprite.Type.Wall);
+				bool isCorner = false;
+				for (int i = 0; i < 4; i++)
+				{
+					int x1 = point.X + (int)Math.Round(Math.Sin(i / 2d * Math.PI), MidpointRounding.AwayFromZero);
+					int y1 = point.Y + (int)Math.Round(Math.Cos(i / 2d * Math.PI), MidpointRounding.AwayFromZero);
+					int x2 = point.X + (int)Math.Round(Math.Sin((i + 1) / 2d * Math.PI), MidpointRounding.AwayFromZero);
+					int y2 = point.Y + (int)Math.Round(Math.Cos((i + 1) / 2d * Math.PI), MidpointRounding.AwayFromZero);
+					if (this.mapSprites[this[x1, y1]].Is(MapSprite.Type.Wall) && this.mapSprites[this[x2, y2]].Is(MapSprite.Type.Wall))
+						isCorner = true;
+					if (isCorner) break;
+				}
+				if (!isCorner) return point;
+			}
+		}
 
 		public void ReplaceMapData(int source, int target)
 		{
@@ -113,14 +151,6 @@ namespace RogueLikeGame
 						this[x, y] = target;
 					}
 				}
-			}
-		}
-
-		public void ValidPoint(int left, int top)
-		{
-			if (top < 0 || Height <= top || left < 0 || Width <= left)
-			{
-				throw new Exception($"({left}, {top}) is out of map.");
 			}
 		}
 
@@ -158,31 +188,10 @@ namespace RogueLikeGame
 
 		public void GenerateRoomRandom()
 		{
-			int x = GameManager.random.Next(0, Width - 3);
-			int y = GameManager.random.Next(Height - 3);
-			int size = GameManager.random.Next(3, Math.Min(Width - x + 1, Height - y + 1));
+			int x = GameManager.random.Next(Width - MinimumRoomSize);
+			int y = GameManager.random.Next(Height - MinimumRoomSize);
+			int size = GameManager.random.Next(MinimumRoomSize, Math.Min(Width - x + 1, Height - y + 1));
 			GenerateRoom(x, y, size);
-		}
-
-		public IEnumerable<(int X, int Y)> FindSprite(MapSprite.Type type)
-		{
-			for (int y = 0; y < Height; y++)
-			{
-				for (int x = 0; x < Width; x++)
-				{
-					if (this.mapSprites[this[x,y]].Is(type))
-					{
-						yield return (x, y);
-					}
-				}
-			}
-		}
-
-		public (int X, int Y) GetRandomPoint(MapSprite.Type type)
-		{
-			IEnumerable<(int X, int Y)> spritePositions = FindSprite(type);
-			int random = GameManager.random.Next(spritePositions.Count());
-			return spritePositions.Index(random);
 		}
 	}
 }

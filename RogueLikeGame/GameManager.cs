@@ -34,6 +34,6 @@ namespace RogueLikeGame
 				}
 				Renderer.Render(true);
 			}
-		}
+		} 
 	}
 }

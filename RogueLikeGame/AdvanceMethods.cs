@@ -8,10 +8,22 @@ namespace RogueLikeGame
 {
 	static class AdvanceMethods
 	{
-		public static T Index<T>(this IEnumerable<T> self, int index)
+		/// <summary>
+		/// Return indexed items.
+		/// </summary>
+		public static IEnumerable<(T item, int index)> Indexed<T>(this IEnumerable<T> source)
 		{
-			try { return self.Skip(index).Take(1).SingleOrDefault(); }
-			catch (Exception) { throw; }
+			if (source == null) throw new ArgumentNullException(nameof(source));
+
+			IEnumerable<(T item, int index)> impl()
+			{
+				int i = 0;
+				foreach (T item in source)
+				{
+					yield return (item, i++);
+				}
+			}
+			return impl();
 		}
 	}
 }

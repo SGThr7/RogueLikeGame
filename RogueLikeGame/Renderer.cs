@@ -42,11 +42,9 @@ namespace RogueLikeGame
 			(int w, int h) = MapManager.GetCurrentMapSize();
 			foreach (int i in diffIndexes)
 			{
-				int y = i / (w + 2);
-				int x = i - y * (w + 2) ;
 				try
 				{
-					Console.SetCursorPosition(x, y);
+					Console.SetCursorPosition(i % (w + 2), i / (w + 2));
 					Console.Write(image[i]);
 				}
 				catch (ArgumentOutOfRangeException) { continue; }

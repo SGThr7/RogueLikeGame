@@ -89,7 +89,19 @@ namespace RogueLikeGame
 		public MapSprite GetSprite(MapSprite.Type type)
 		{
 			try { return this.mapSprites.Find(sprite => sprite.Is(type)); }
-			catch (ArgumentNullException) { return UnknownSprite; }
+			catch (Exception) { return UnknownSprite; }
+		}
+
+		public int GetSpriteID(MapSprite.Type type)
+		{
+			try { return this.mapSprites.FindIndex(sprite => sprite.Is(type)); }
+			catch (Exception) { return UnknownIndex; }
+		}
+
+		public List<int> GetSpriteIDs(MapSprite.Type type)
+		{
+			try { return this.mapSprites.Indexed().Where(t => t.item.Is(type)).Select(t => t.index).ToList(); }
+			catch (Exception) { return new List<int>(); }
 		}
 
 		public int GetID(MapSprite.Type type)
