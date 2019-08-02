@@ -60,7 +60,7 @@ namespace RogueLikeGame
 
 		public (int X, int Y) RandomTeleport()
 		{
-			(int X, int Y) position= MapManager.CurrentMap.GetRandomPoint(MapSprite.Type.Floor);
+			(int X, int Y) position= MapManager.CurrentMap.GetRandomPoint(MapSprite.Type.Room);
 			return Teleport(position);
 		}
 	}

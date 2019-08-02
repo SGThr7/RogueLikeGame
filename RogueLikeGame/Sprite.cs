@@ -10,7 +10,7 @@ namespace RogueLikeGame
 	{
 		public enum Type
 		{
-			Unknown, Wall, Floor
+			Unknown, Wall, Floor, AroundWall, Room
 		}
 
 		public List<Type> Attributes { get; } = new List<Type>();
@@ -24,36 +24,46 @@ namespace RogueLikeGame
 			Attributes.Add(type);
 		}
 
-		public override string ToString()
+		public MapSprite(IEnumerable<Type> types, char symbol)
 		{
-			return Symbol.ToString();
+			Symbol = symbol;
+			foreach (Type type in types)
+			{
+				Attributes.Add(type);
+			}
 		}
 
+		public override string ToString()
+			=> Symbol.ToString();
+
 		public bool Is(Type type)
+			=> Attributes.Contains(type);
+
+		public bool Is(IEnumerable<Type> types)
 		{
-			return Attributes.Contains(type);
+			bool ret = true;
+			foreach (Type type in types)
+			{
+				ret &= Is(type);
+			}
+
+			return ret;
 		}
 	}
 
 	class MapSprites
 	{
 		private readonly List<MapSprite> mapSprites = new List<MapSprite>();
-		private int UnknownIndex => 0;
-		private MapSprite UnknownSprite => this.mapSprites[UnknownIndex];
+		public int UnknownIndex => 0;
+		public MapSprite UnknownSprite => this.mapSprites[UnknownIndex];
 
 		public MapSprites(List<MapSprite> mapSprites)
 		{
 			this.mapSprites.Add(new MapSprite(MapSprite.Type.Unknown, ' '));
 			Add(mapSprites);
-			if (GetID(MapSprite.Type.Wall) == UnknownIndex)
-			{
-				Add(new MapSprite(MapSprite.Type.Wall, '#'));
-			}
-
-			if (GetID(MapSprite.Type.Floor) == UnknownIndex)
-			{
-				Add(new MapSprite(MapSprite.Type.Floor, '.'));
-			}
+			AddIfNotExist(MapSprite.Type.Wall, '#');
+			AddIfNotExist(MapSprite.Type.Floor, '.');
+			AddIfNotExist(MapSprite.Type.AroundWall, '+');
 		}
 
 		public MapSprites() : this(new List<MapSprite>())
@@ -62,21 +72,36 @@ namespace RogueLikeGame
 
 		public MapSprite this[int index]
 		{
+			get { return index < 0 || index >= this.mapSprites.Count ? UnknownSprite : this.mapSprites[index]; }
+		}
+		public MapSprite this[MapSprite.Type type]
+		{
 			get
 			{
-				return index < 0 || index >= this.mapSprites.Count ? UnknownSprite : this.mapSprites[index];
+				try { return this.mapSprites.Find(sprite => sprite.Is(type)); }
+				catch { return UnknownSprite; }
 			}
+		}
+
+		public bool IsExist(MapSprite.Type type)
+		{
+			MapSprite sprite = this[type];
+			if (sprite == null) return false;
+			return sprite.Is(type);
 		}
 
 		public void Add(MapSprite mapSprite)
 		{
+			if (mapSprite == null)
+			{
+				throw new ArgumentNullException(nameof(mapSprite));
+			}
+
 			this.mapSprites.Add(mapSprite);
 		}
 
 		public void Add(MapSprite.Type type, char sprite)
-		{
-			Add(new MapSprite(type, sprite));
-		}
+			=> Add(new MapSprite(type, sprite));
 
 		public void Add(List<MapSprite> mapSprites)
 		{
@@ -86,36 +111,33 @@ namespace RogueLikeGame
 			}
 		}
 
-		public MapSprite GetSprite(MapSprite.Type type)
-		{
-			try { return this.mapSprites.Find(sprite => sprite.Is(type)); }
-			catch (Exception) { return UnknownSprite; }
-		}
-
-		public int GetSpriteID(MapSprite.Type type)
-		{
-			try { return this.mapSprites.FindIndex(sprite => sprite.Is(type)); }
-			catch (Exception) { return UnknownIndex; }
-		}
-
-		public List<int> GetSpriteIDs(MapSprite.Type type)
-		{
-			try { return this.mapSprites.Indexed().Where(t => t.item.Is(type)).Select(t => t.index).ToList(); }
-			catch (Exception) { return new List<int>(); }
-		}
-
-		public int GetID(MapSprite.Type type)
-		{
-			try { return this.mapSprites.FindIndex(sprite => sprite.Is(type)); }
-			catch { return UnknownIndex; }
-		}
-
 		public void AddIfNotExist(MapSprite.Type type, char sprite)
 		{
-			if (GetID(type) == UnknownIndex)
+			if (!IsExist(type))
 			{
 				Add(type, sprite);
 			}
 		}
+
+		public List<int> GetIDs(MapSprite.Type type)
+		{
+			try { return this.mapSprites.Indexed().Where(t => t.item.Is(type)).Select(t => t.index).ToList(); }
+			catch { return new List<int>(); }
+		}
+
+		public int GetID(Predicate<MapSprite> match)
+		{
+			try { return this.mapSprites.FindIndex(match); }
+			catch { return UnknownIndex; }
+		}
+
+		public int GetID(MapSprite.Type type)
+			=> GetID(s => s.Is(type));
+
+		public int GetID(MapSprite mapSprite)
+			=> GetID(s => s == mapSprite);
+
+		public int GetID(IEnumerable<MapSprite.Type> types)
+			=> GetID(s => s.Is(types));
 	}
 }
