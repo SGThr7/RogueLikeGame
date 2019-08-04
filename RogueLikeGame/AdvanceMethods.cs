@@ -25,5 +25,8 @@ namespace RogueLikeGame
 			}
 			return impl();
 		}
+
+		public static (int min, int max) MinMax(this (int num1, int num2) nums) 
+			=> (Math.Min(nums.num1, nums.num2), Math.Max(nums.num1, nums.num2));
 	}
 }

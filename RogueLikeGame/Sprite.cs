@@ -10,7 +10,7 @@ namespace RogueLikeGame
 	{
 		public enum Type
 		{
-			Unknown, Wall, Floor, AroundWall, Room
+			Unknown, Wall, Floor, AroundWall, Room, Debug
 		}
 
 		public List<Type> Attributes { get; } = new List<Type>();
