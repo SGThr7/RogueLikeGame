@@ -26,6 +26,12 @@ namespace RogueLikeGame
 			return impl();
 		}
 
+		public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) 
+			=> source.OrderBy(a => Guid.NewGuid());
+
+		public static T Random<T>(this IEnumerable<T> source)
+			=> source.Shuffle().First();
+
 		public static (int min, int max) MinMax(this (int num1, int num2) nums) 
 			=> (Math.Min(nums.num1, nums.num2), Math.Max(nums.num1, nums.num2));
 	}

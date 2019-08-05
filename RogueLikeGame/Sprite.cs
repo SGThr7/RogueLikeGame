@@ -17,6 +17,7 @@ namespace RogueLikeGame
 		public char Symbol { get; }
 
 		public bool CanWalk => Is(Type.Floor);
+		public bool CanReplace => IsOr(Type.Unknown, Type.AroundWall, Type.Debug);
 
 		public MapSprite(Type type, char symbol)
 		{
@@ -39,7 +40,7 @@ namespace RogueLikeGame
 		public bool Is(Type type)
 			=> Attributes.Contains(type);
 
-		public bool Is(IEnumerable<Type> types)
+		public bool Is(params Type[] types)
 		{
 			bool ret = true;
 			foreach (Type type in types)
@@ -48,6 +49,18 @@ namespace RogueLikeGame
 			}
 
 			return ret;
+		}
+
+		public bool IsOr(params Type[] types)
+		{
+			foreach (var type in types)
+			{
+				if (Is(type))
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
@@ -137,7 +150,7 @@ namespace RogueLikeGame
 		public int GetID(MapSprite mapSprite)
 			=> GetID(s => s == mapSprite);
 
-		public int GetID(IEnumerable<MapSprite.Type> types)
+		public int GetID(params MapSprite.Type[] types)
 			=> GetID(s => s.Is(types));
 	}
 }
