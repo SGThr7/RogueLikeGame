@@ -7,11 +7,11 @@ namespace RogueLikeGame
 		public int X { get; set; } = 0;
 		public int Y { get; set; } = 0;
 		public char Symbol { get; } = '@';
-		private readonly MoveComponent move;
+		public Action MoveComponent { get; }
 
 		public Player()
 		{
-			this.move = new MoveComponent(this);
+			MoveComponent = new Action(this);
 		}
 
 		public override string ToString()
@@ -24,44 +24,26 @@ namespace RogueLikeGame
 			switch (key)
 			{
 				case 'k':
-				case '8': return this.move.MoveUp();
+				case '8': return MoveComponent.MoveUp();
 				case 'y':
-				case '7': return this.move.MoveUpLeft();
+				case '7': return MoveComponent.MoveUpLeft();
 				case 'h':
-				case '4': return this.move.MoveLeft();
+				case '4': return MoveComponent.MoveLeft();
 				case 'b':
-				case '1': return this.move.MoveDownLeft();
+				case '1': return MoveComponent.MoveDownLeft();
 				case 'j':
-				case '2': return this.move.MoveDown();
+				case '2': return MoveComponent.MoveDown();
 				case 'n':
-				case '3': return this.move.MoveDownRight();
+				case '3': return MoveComponent.MoveDownRight();
 				case 'l':
-				case '6': return this.move.MoveRight();
+				case '6': return MoveComponent.MoveRight();
 				case 'u':
-				case '9': return this.move.MoveUpRight();
+				case '9': return MoveComponent.MoveUpRight();
 				case '.':
 				case '5':
 				default:
-					return this.move.MoveWait();
+					return MoveComponent.MoveWait();
 			}
-		}
-
-		public (int X, int Y) Teleport((int x, int y) position)
-		{
-			X = position.x;
-			Y = position.y;
-			return position;
-		}
-
-		public (int X, int Y) Teleport(int x, int y)
-		{
-			return Teleport(x, y);
-		}
-
-		public (int X, int Y) RandomTeleport()
-		{
-			(int X, int Y) position= MapManager.CurrentMap.GetRandomSpritePoint(MapSprite.Type.Room);
-			return Teleport(position);
 		}
 	}
 }

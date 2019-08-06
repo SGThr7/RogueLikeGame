@@ -51,18 +51,20 @@ namespace RogueLikeGame
 		}
 
 		private readonly int[] map;
-		public readonly MapSprites mapSprites = new MapSprites();
+		public readonly MapSprites mapSprites;
 		public int Width { get; }
 		public int Height { get; }
 		public (int Width, int Height) Size => (Width, Height);
 		private const int MinimumRoomSize = 6;
+		public readonly MapVisible mapVisible;
 
 		public Map(int width, int height, List<MapSprite> sprites)
 		{
 			this.map = new int[width * height];
 			Width = width;
 			Height = height;
-			this.mapSprites.Add(sprites);
+			this.mapVisible = new MapVisible(width, height);
+			this.mapSprites = new MapSprites(sprites);
 			GenerateMap();
 		}
 		public Map(int width, int height)
@@ -110,6 +112,23 @@ namespace RogueLikeGame
 
 		public MapSprite GetMapSprite(int left, int top) =>
 			this.mapSprites[this[left, top]];
+
+		public MapSprite GetVisibleMapSprite(int left, int top)
+			=> this.mapVisible[left, top] ? GetMapSprite(left, top) : this.mapSprites.UnknownSprite;
+
+		public IEnumerable<(int X, int Y)> GetSpritePositions(Predicate<MapSprite> predicate)
+		{
+			for (int y = 0; y < Height; y++)
+			{
+				for (int x = 0; x < Width; x++)
+				{
+					if (predicate(this.mapSprites[this[x, y]]))
+					{
+						yield return (x, y);
+					}
+				}
+			}
+		}
 
 		public IEnumerable<(int X, int Y)> GetRandomSpritePoints(MapSprite.Type type)
 		{
@@ -245,7 +264,6 @@ namespace RogueLikeGame
 				foreach (int x in xs)
 				{
 					SetSprite(x, y, value, forceReplace);
-					//this[x, y, forceReplace] = value;
 				}
 			}
 		}
@@ -254,7 +272,6 @@ namespace RogueLikeGame
 			foreach (int x in xs)
 			{
 				SetSprite(x, y, value, forceReplace);
-				//this[x, y, forceReplace] = value;
 			}
 		}
 		public void FillSprite(int x, IEnumerable<int> ys, int value, bool forceReplace)
@@ -262,7 +279,6 @@ namespace RogueLikeGame
 			foreach (int y in ys)
 			{
 				SetSprite(x, y, value, forceReplace);
-				//this[x, y, forceReplace] = value;
 			}
 		}
 
@@ -289,7 +305,6 @@ namespace RogueLikeGame
 				int right = isLeft(i) ? pivot.X - 1 : Width;
 				int top = isTop(i) ? 0 : pivot.Y + 1;
 				int bottom = isTop(i) ? pivot.Y - 1 : Height;
-				System.Diagnostics.Debug.WriteLine($"{pivot.X}, {pivot.Y}, {left}-{right}, {top}-{bottom}, {i / Math.Sqrt(sectionCount)}");
 
 				List<(int X, int Y, int SpriteID)> sprites = GenerateRoomRandom(left, top, right, bottom);
 				IEnumerable<(int X, int Y, int SpriteID)> walls = sprites
@@ -356,11 +371,10 @@ namespace RogueLikeGame
 			}
 
 			/// Connect roads
-			//bool roadMode = false;
-			//bool oldRoadMode = false;
 			void ConnectRoads(Axis axis)
 			{
 				int wall = this.mapSprites.GetID(MapSprite.Type.Wall);
+				int aroundWall = this.mapSprites.GetID(MapSprite.Type.AroundWall);
 				bool roadMode = false;
 				bool oldRoadMode = false;
 				int length = axis == Axis.X ? Width : Height;
@@ -383,12 +397,14 @@ namespace RogueLikeGame
 					{
 						if (oldRoadMode != roadMode)
 						{
+							FillSprite(Enumerable.Range(x - 2, 5), Enumerable.Range(y - 2, 5), aroundWall, false);
 							FillSprite(Enumerable.Range(x - 1, 3), Enumerable.Range(y - 1, 3), wall, false);
 						}
 						GenerateRoad(x, y, axis);
 					}
 					else if (oldRoadMode != roadMode)
 					{
+						FillSprite(Enumerable.Range(x - 2, 5), Enumerable.Range(y - 2, 5), aroundWall, false);
 						FillSprite(Enumerable.Range(x - 1, 3), Enumerable.Range(y - 1, 3), wall, false);
 					}
 					oldRoadMode = roadMode;
@@ -396,46 +412,6 @@ namespace RogueLikeGame
 			}
 			ConnectRoads(Axis.X);
 			ConnectRoads(Axis.Y);
-			//for (int i = 0; i < Width; i++)
-			//{
-			//	if (this.mapSprites[this[i, pivot.Y - 1]].CanWalk)
-			//	{
-			//		roadMode = !roadMode;
-			//	}
-			//	if (this.mapSprites[this[i, pivot.Y + 1]].CanWalk)
-			//	{
-			//		roadMode = !roadMode;
-			//	}
-			//	if (roadMode)
-			//	{
-			//		GenerateRoad(i, pivot.Y, Axis.X);
-			//	}
-			//	oldRoadMode = roadMode;
-			//}
-			//for (int i = 0; i < Height; i++)
-			//{
-			//	if (this.mapSprites[this[pivot.X - 1, i]].CanWalk)
-			//	{
-			//		roadMode = !roadMode;
-			//	}
-			//	if (this.mapSprites[this[pivot.X + 1, i]].CanWalk)
-			//	{
-			//		roadMode = !roadMode;
-			//	}
-			//	if (roadMode)
-			//	{
-			//		if (oldRoadMode != roadMode)
-			//		{
-			//			FillSprite(Enumerable.Range(pivot.X - 1, 3), i - 1, this.mapSprites.GetID(MapSprite.Type.Wall), false);
-			//		}
-			//		GenerateRoad(pivot.X, i, Axis.Y);
-			//	}
-			//	else if (oldRoadMode != roadMode)
-			//	{
-			//		FillSprite(Enumerable.Range(pivot.X - 1, 3), Enumerable.Range(i, 2), this.mapSprites.GetID(MapSprite.Type.Wall), false);
-			//	}
-			//	oldRoadMode = roadMode;
-			//}
 		}
 
 		public void GenerateWall(int left, int top, int diffX, int diffY, int padding, MapSprite sprite, bool forceReplace = true)
@@ -457,8 +433,8 @@ namespace RogueLikeGame
 
 		public void GenerateWall(int left, int top, Axis axis, int padding, int spriteID, bool forceReplace = true)
 		{
-			int x = axis == Axis.Y ? 1 : 0;
-			int y = axis == Axis.X ? 1 : 0;
+			int x = axis == Axis.Y ? padding : 0;
+			int y = axis == Axis.X ? padding : 0;
 			SetSprite(left + x, top + y, spriteID, forceReplace);
 			SetSprite(left - x, top - y, spriteID, forceReplace);
 			//this[left + x, top + y, forceReplace] = id;
@@ -471,6 +447,8 @@ namespace RogueLikeGame
 			=> GenerateWall(left, top, axis, 1, sprite, forceReplace);
 		public void GenerateWall(int left, int top, Axis axis, bool forceReplace = true)
 			=> GenerateWall(left, top, axis, 1, this.mapSprites[MapSprite.Type.Wall], forceReplace);
+		public void GenerateWall(int left, int top, Axis axis, int padding, bool forceReplace = true)
+			=> GenerateWall(left, top, axis, padding, this.mapSprites[MapSprite.Type.Wall], forceReplace);
 
 		public List<(int X, int Y, int SpriteID)> GenerateOutline(int left, int top, int width, int height, MapSprite.Type type, bool forceReplace = true)
 		{
@@ -558,6 +536,7 @@ namespace RogueLikeGame
 		{
 			this[left, top] = this.mapSprites.GetID(MapSprite.Type.Floor);
 			GenerateWall(left, top, axis, false);
+			GenerateWall(left, top, axis, 2, this.mapSprites[MapSprite.Type.AroundWall], false);
 		}
 
 		public void GrowFloor(int left, int top, Axis axis, int length)
@@ -567,19 +546,9 @@ namespace RogueLikeGame
 			int wall = this.mapSprites.GetID(MapSprite.Type.Wall);
 			for (int i = 0; i < length * direction; i++)
 			{
-				switch (axis)
-				{
-					case Axis.X:
-						this[left + (i * direction), top] = floor;
-						this[left + (i * direction), top - 1] = wall;
-						this[left + (i * direction), top + 1] = wall;
-						break;
-					case Axis.Y:
-						this[left, top + i * direction] = floor;
-						this[left - 1, top + i * direction] = wall;
-						this[left + 1, top + i * direction] = wall;
-						break;
-				}
+				int x = left + (axis == Axis.X ? i * direction : 0);
+				int y = top + (axis == Axis.Y ? i * direction : 0);
+				GenerateRoad(x, y, axis);
 			}
 		}
 	}
