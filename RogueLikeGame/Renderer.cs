@@ -62,6 +62,7 @@ namespace RogueLikeGame
 		static void Draw(ref StringBuilder sb)
 		{
 			DrawMapFull(ref sb);
+			DrawEnemys(ref sb);
 			DrawPlayer(ref sb);
 		}
 
@@ -69,6 +70,15 @@ namespace RogueLikeGame
 		{
 			int index = (MapManager.GetCurrentMapSize().Width + 2) * GameManager.Player.Y + GameManager.Player.X;
 			sb.Remove(index, 1).Insert(index, GameManager.Player.Symbol);
+		}
+
+		static void DrawEnemys(ref StringBuilder sb)
+		{
+			foreach (var enemy in GameManager.Enemys)
+			{
+				int index = (MapManager.GetCurrentMapSize().Width + 2) * enemy.Y + enemy.X;
+				sb.Remove(index, 1).Insert(index, enemy.Symbol);
+			}
 		}
 
 		static void DrawMapFull(ref StringBuilder sb)
@@ -79,6 +89,7 @@ namespace RogueLikeGame
 			{
 				for (int x = 0; x < width; x++)
 				{
+					//sb.Append(map.GetVisibleMapSprite(x, y));
 					sb.Append(map.GetMapSprite(x, y));
 				}
 
