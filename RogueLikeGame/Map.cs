@@ -6,7 +6,7 @@ namespace RogueLikeGame
 {
 	static class MapManager
 	{
-		private static List<Map> maps = new List<Map>();
+		private static readonly List<Map> maps = new List<Map>();
 		public static int CurrentMapNumber => maps.Count;
 		public static Map CurrentMap
 		{
@@ -542,8 +542,6 @@ namespace RogueLikeGame
 		public void GrowFloor(int left, int top, Axis axis, int length)
 		{
 			sbyte direction = (sbyte)(length < 0 ? -1 : 1);
-			int floor = this.mapSprites.GetID(MapSprite.Type.Floor);
-			int wall = this.mapSprites.GetID(MapSprite.Type.Wall);
 			for (int i = 0; i < length * direction; i++)
 			{
 				int x = left + (axis == Axis.X ? i * direction : 0);

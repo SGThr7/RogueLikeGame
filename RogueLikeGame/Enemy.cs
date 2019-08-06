@@ -11,11 +11,13 @@ namespace RogueLikeGame
 		public int X { get; set; } = 0;
 		public int Y { get; set; } = 0;
 		public char Symbol { get; } = 'g';
-		public Action MoveComponent { get; }
+		public int HP { get; private set; }
+		public int Attack { get; } = 1;
+		public Action Action { get; }
 
 		public Enemy()
 		{
-			MoveComponent = new Action(this);
+			Action = new Action(this);
 		}
 
 		public void Move()
@@ -30,11 +32,14 @@ namespace RogueLikeGame
 				for (int i = 0; i < direction; i++)
 				{
 					double _angle = i / (direction / 2d) * Math.PI;
-					around.Add((MoveComponent.Move(1, _angle, true), _angle));
+					around.Add((Action.Move(1, _angle, true), _angle));
 				}
 				(_, double angle) = around.OrderBy(a => dist(a.point.X, a.point.Y)).First();
-				MoveComponent.Move(1, angle);
+				Action.Move(1, angle);
 			}
 		}
+
+		public int TakeDamage(int damage)
+			=> HP -= damage;
 	}
 }

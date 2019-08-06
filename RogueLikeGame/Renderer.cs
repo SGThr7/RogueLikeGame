@@ -39,7 +39,7 @@ namespace RogueLikeGame
 				}
 			}
 
-			(int w, int h) = MapManager.GetCurrentMapSize();
+			(int w, _) = MapManager.GetCurrentMapSize();
 			foreach (int i in diffIndexes)
 			{
 				try
@@ -74,7 +74,7 @@ namespace RogueLikeGame
 
 		static void DrawEnemys(ref StringBuilder sb)
 		{
-			foreach (var enemy in GameManager.Enemys)
+			foreach (var enemy in GameManager.Enemies)
 			{
 				int index = (MapManager.GetCurrentMapSize().Width + 2) * enemy.Y + enemy.X;
 				sb.Remove(index, 1).Insert(index, enemy.Symbol);

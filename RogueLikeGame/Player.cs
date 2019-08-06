@@ -7,11 +7,13 @@ namespace RogueLikeGame
 		public int X { get; set; } = 0;
 		public int Y { get; set; } = 0;
 		public char Symbol { get; } = '@';
-		public Action MoveComponent { get; }
+		public Action Action { get; }
+		public int HP { get; private set; }
+		public int Attack { get; } = 2;
 
 		public Player()
 		{
-			MoveComponent = new Action(this);
+			Action = new Action(this);
 		}
 
 		public override string ToString()
@@ -19,31 +21,34 @@ namespace RogueLikeGame
 			return Symbol.ToString();
 		}
 
-		public object Move(char key)
+		public object Move(char keyChar)
 		{
-			switch (key)
+			switch (keyChar)
 			{
 				case 'k':
-				case '8': return MoveComponent.MoveUp();
+				case '8': return Action.MoveUp();
 				case 'y':
-				case '7': return MoveComponent.MoveUpLeft();
+				case '7': return Action.MoveUpLeft();
 				case 'h':
-				case '4': return MoveComponent.MoveLeft();
+				case '4': return Action.MoveLeft();
 				case 'b':
-				case '1': return MoveComponent.MoveDownLeft();
+				case '1': return Action.MoveDownLeft();
 				case 'j':
-				case '2': return MoveComponent.MoveDown();
+				case '2': return Action.MoveDown();
 				case 'n':
-				case '3': return MoveComponent.MoveDownRight();
+				case '3': return Action.MoveDownRight();
 				case 'l':
-				case '6': return MoveComponent.MoveRight();
+				case '6': return Action.MoveRight();
 				case 'u':
-				case '9': return MoveComponent.MoveUpRight();
+				case '9': return Action.MoveUpRight();
 				case '.':
 				case '5':
 				default:
-					return MoveComponent.MoveWait();
+					return Action.MoveWait();
 			}
 		}
+
+		public int TakeDamage(int damage)
+			=> HP -= damage;
 	}
 }

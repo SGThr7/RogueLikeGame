@@ -13,7 +13,7 @@ namespace RogueLikeGame
 
 	interface ICharacter : IPosition, ISprite, IStatus
 	{
-		Action MoveComponent { get; }
+		Action Action { get; }
 	}
 
 	interface ISprite
@@ -24,7 +24,8 @@ namespace RogueLikeGame
 	interface IStatus
 	{
 		int HP { get; }
+		int Attack { get; }
 
-		int Damage(int damage);
+		int TakeDamage(int damage);
 	}
 }

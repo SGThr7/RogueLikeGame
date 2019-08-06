@@ -1,14 +1,15 @@
 using System;
+using System.Linq;
 
 namespace RogueLikeGame
 {
 	class Action
 	{
-		private readonly IPosition position;
+		private readonly ICharacter character;
 
-		public Action(IPosition position)
+		public Action(ICharacter character)
 		{
-			this.position = position;
+			this.character = character;
 		}
 
 		public (int X, int Y) Move(int distance, double angle, bool isSimurate = false)
@@ -16,7 +17,7 @@ namespace RogueLikeGame
 			int xDiff = -1 * (int)Math.Round(distance * Math.Sin(angle), MidpointRounding.AwayFromZero);
 			int yDiff = -1 * (int)Math.Round(distance * Math.Cos(angle), MidpointRounding.AwayFromZero);
 
-			(int x, int y) = (this.position.X, this.position.Y);
+			(int x, int y) = (this.character.X, this.character.Y);
 			Map map = MapManager.CurrentMap;
 			if (!map.GetMapSprite(x + xDiff, y).CanWalk)
 			{
@@ -37,22 +38,32 @@ namespace RogueLikeGame
 			{
 				x += xDiff;
 				y += yDiff;
+
+				bool isAttack = true;
+				bool noCharacter(ICharacter character)
+					=> character.X != x || character.Y != y;
+				foreach (var character in GameManager.Characters)
+				{
+					if (character != this.character)
+					{
+						isAttack &= noCharacter(character);
+					}
+				}
+
+				if (!isSimurate)
+				{
+					if (isAttack)
+					{
+						this.character.X = x;
+						this.character.Y = y;
+					}
+					else
+					{
+						Attack(x, y);
+					}
+				}
 			}
 
-			bool canMove = true;
-			bool noCharacter(ICharacter character)
-				=> character.X != x || character.Y != y;
-			canMove &= noCharacter(GameManager.Player);
-			foreach (var enemy in GameManager.Enemys)
-			{
-				canMove &= noCharacter(enemy);
-			}
-
-			if (!isSimurate && canMove)
-			{
-				this.position.X = x;
-				this.position.Y = y;
-			}
 			return (x, y);
 		}
 		public (int X, int Y) MoveWait(bool isSimulate = false) { return Move(0, 0, isSimulate); }
@@ -75,8 +86,8 @@ namespace RogueLikeGame
 
 		public (int X, int Y) Teleport((int x, int y) position)
 		{
-			this.position.X = position.x;
-			this.position.Y = position.y;
+			this.character.X = position.x;
+			this.character.Y = position.y;
 			return position;
 		}
 
@@ -91,8 +102,12 @@ namespace RogueLikeGame
 			return Teleport(position);
 		}
 
-		public void Attack()
+		public void Attack(int x, int y)
 		{
+			var c = GameManager.Characters
+				.Where(a => a.X == x && a.Y == y)
+				.First();
+			c.TakeDamage(this.character.Attack);
 			System.Diagnostics.Debug.WriteLine("Attacked");
 		}
 	}
