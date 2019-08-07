@@ -2,17 +2,13 @@ namespace RogueLikeGame
 {
 	internal interface IKeyInput
 	{
-		void Move(char keyInput);
+		bool Move(char keyInput);
 	}
 
 	internal interface IPosition
 	{
 		int X { get; set; }
 		int Y { get; set; }
-	}
-
-	internal interface ICharacter : IPosition, ISprite, IStatus
-	{
 	}
 
 	internal interface ISprite
@@ -22,9 +18,26 @@ namespace RogueLikeGame
 
 	internal interface IStatus
 	{
+		int MaxHP { get; }
 		int HP { get; }
-		int Attack { get; }
+		int Power { get; }
 
-		int TakeDamage(int damage);
+		void TakeDamage(int damage);
+		void Attack(ICharacter character);
+		void Dead();
+	}
+
+	internal interface ICharacter : IPosition, ISprite, IStatus
+	{
+		string Name { get; }
+	}
+
+	internal interface IEnemy: ICharacter
+	{ 
+	}
+
+	internal interface IPlayer: ICharacter
+	{
+		int Hunger { get; }
 	}
 }

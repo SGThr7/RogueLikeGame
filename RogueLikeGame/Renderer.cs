@@ -7,6 +7,9 @@ namespace RogueLikeGame
 	internal static class Renderer
 	{
 		private static string buff;
+		private const int UI_LEFT_LINE = 3;
+		private const int UI_STATUS_LINE = 39;
+		private const int UI_MESSAGE_LINE = 37;
 
 		public static void RenderFull()
 		{
@@ -59,7 +62,16 @@ namespace RogueLikeGame
 			buff = image;
 		}
 
-		static void Draw(ref StringBuilder mapData)
+		private static void ClearLine()
+		{
+			int left = Console.CursorLeft;
+			int top = Console.CursorTop;
+			Console.Write(new string(' ', Console.WindowWidth));
+			Console.SetCursorPosition(left, top);
+			//Console.SetCursorPosition(0, Console.CursorTop - 1);
+		}
+
+		private static void Draw(ref StringBuilder mapData)
 		{
 			DrawMapFull(ref mapData);
 			DrawEnemys(ref mapData);
@@ -67,20 +79,20 @@ namespace RogueLikeGame
 			DrawStatus();
 		}
 
-		static void DrawPlayer(ref StringBuilder mapData)
+		private static void DrawPlayer(ref StringBuilder mapData)
 		{
 			int index = (MapManager.GetCurrentMapSize().Width + 2) * GameManager.Player.Y + GameManager.Player.X;
 			mapData.Remove(index, 1).Insert(index, GameManager.Player.Symbol);
 		}
 
-		static void DrawStatus()
+		private static void DrawStatus()
 		{
 			Player player = GameManager.Player;
-			Console.SetCursorPosition(3, 39);
-			Console.Write($"HP {player.HP} / {player.MaxHP}");
+			Console.SetCursorPosition(UI_LEFT_LINE, UI_STATUS_LINE);
+			Console.Write($"HP: {player.HP,3}/{player.MaxHP,3}, 満腹度: {player.Hunger,3}/{player.MaxHunger,3}");
 		}
 
-		static void DrawEnemys(ref StringBuilder mapData)
+		private static void DrawEnemys(ref StringBuilder mapData)
 		{
 			foreach (var enemy in GameManager.Enemies)
 			{
@@ -89,7 +101,7 @@ namespace RogueLikeGame
 			}
 		}
 
-		static void DrawMapFull(ref StringBuilder mapData)
+		private static void DrawMapFull(ref StringBuilder mapData)
 		{
 			var map = MapManager.CurrentMap;
 			(int width, int height) = map.Size;
@@ -97,12 +109,18 @@ namespace RogueLikeGame
 			{
 				for (int x = 0; x < width; x++)
 				{
-					//sb.Append(map.GetVisibleMapSprite(x, y));
 					mapData.Append(map.GetMapSprite(x, y));
 				}
 
 				mapData.AppendLine();
 			}
+		}
+
+		public static void DrawMessage(string message)
+		{
+			Console.SetCursorPosition(UI_LEFT_LINE, UI_MESSAGE_LINE);
+			ClearLine();
+			Console.Write(message);
 		}
 	}
 }

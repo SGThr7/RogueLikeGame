@@ -76,7 +76,7 @@ namespace RogueLikeGame
 			Add(mapSprites);
 			AddIfNotExist(MapSprite.Type.Wall, '#');
 			AddIfNotExist(MapSprite.Type.Floor, '.');
-			AddIfNotExist(MapSprite.Type.AroundWall, '+');
+			AddIfNotExist(MapSprite.Type.AroundWall, ' ');
 		}
 
 		public MapSprites() : this(new List<MapSprite>())

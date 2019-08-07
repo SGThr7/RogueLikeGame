@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace RogueLikeGame
 {
-	internal class Enemy : BaseCharacter, ICharacter
+	internal class Enemy : BaseCharacter, IEnemy
 	{
-		public Enemy() : base(0, 0, 'g', 10, 1)
+		enum Names
+		{
+			Jackal = 'j',
+			Goblin = 'g'
+		}
+
+		public Enemy() : base(0, 0, Names.Jackal.ToString(), (char)Names.Jackal, 10, 1)
 		{
 		}
 
@@ -29,6 +35,12 @@ namespace RogueLikeGame
 				(_, double angle) = around.OrderBy(a => dist(a.point.X, a.point.Y)).First();
 				this.Move(1, angle);
 			}
+		}
+
+		public override void Dead()
+		{
+			SystemMessage.Send($"{Name} を倒した");
+			GameManager.Enemies.Remove(this);
 		}
 	}
 }

@@ -37,9 +37,21 @@ namespace RogueLikeGame
 
 		}
 
-		public static void Move(this ICharacter character, int distance, double angle)
+		/// <summary>
+		/// Character moving method.
+		/// </summary>
+		/// <param name="character"></param>
+		/// <param name="distance"></param>
+		/// <param name="radian"></param>
+		/// <returns>If character doing anything, return true.</returns>
+		public static bool Move(this ICharacter character, int distance, double radian)
 		{
-			(int x, int y) = character.PreMove(distance, angle);
+			(int x, int y) = character.PreMove(distance, radian);
+
+			if (character.X == x && character.Y == y)
+			{
+				return false;
+			}
 
 			bool isAttack = false;
 			bool noCharacter(ICharacter c, int _x, int _y)
@@ -65,24 +77,25 @@ namespace RogueLikeGame
 				character.X = x;
 				character.Y = y;
 			}
+			return true;
 		}
-		public static void MoveWait(this ICharacter character) { Move(character, 0, 0); }
-		public static void MoveUp(this ICharacter character, int distance) { Move(character, distance, 0); }
-		public static void MoveUp(this ICharacter character) { MoveUp(character, 1); }
-		public static void MoveLeft(this ICharacter character, int distance) { Move(character, distance, 90 / 180d * Math.PI); }
-		public static void MoveLeft(this ICharacter character) { MoveLeft(character, 1); }
-		public static void MoveDown(this ICharacter character, int distance) { Move(character, distance, 180 / 180d * Math.PI); }
-		public static void MoveDown(this ICharacter character) { MoveDown(character, 1); }
-		public static void MoveRight(this ICharacter character, int distance) { Move(character, distance, 270 / 180d * Math.PI); }
-		public static void MoveRight(this ICharacter character) { MoveRight(character, 1); }
-		public static void MoveUpLeft(this ICharacter character, int distance) { Move(character, distance, 45 / 180d * Math.PI); }
-		public static void MoveUpLeft(this ICharacter character) { MoveUpLeft(character, 1); }
-		public static void MoveDownLeft(this ICharacter character, int distance) { Move(character, distance, 135 / 180d * Math.PI); }
-		public static void MoveDownLeft(this ICharacter character) { MoveDownLeft(character, 1); }
-		public static void MoveDownRight(this ICharacter character, int distance) { Move(character, distance, 225 / 180d * Math.PI); }
-		public static void MoveDownRight(this ICharacter character) { MoveDownRight(character, 1); }
-		public static void MoveUpRight(this ICharacter character, int distance) { Move(character, distance, 315 / 180d * Math.PI); }
-		public static void MoveUpRight(this ICharacter character) { MoveUpRight(character, 1); }
+		public static bool MoveWait(this ICharacter character) { return true; }
+		public static bool MoveUp(this ICharacter character, int distance) { return Move(character, distance, 0); }
+		public static bool MoveUp(this ICharacter character) { return MoveUp(character, 1); }
+		public static bool MoveLeft(this ICharacter character, int distance) { return Move(character, distance, 90 / 180d * Math.PI); }
+		public static bool MoveLeft(this ICharacter character) { return MoveLeft(character, 1); }
+		public static bool MoveDown(this ICharacter character, int distance) { return Move(character, distance, 180 / 180d * Math.PI); }
+		public static bool MoveDown(this ICharacter character) { return MoveDown(character, 1); }
+		public static bool MoveRight(this ICharacter character, int distance) { return Move(character, distance, 270 / 180d * Math.PI); }
+		public static bool MoveRight(this ICharacter character) { return MoveRight(character, 1); }
+		public static bool MoveUpLeft(this ICharacter character, int distance) { return Move(character, distance, 45 / 180d * Math.PI); }
+		public static bool MoveUpLeft(this ICharacter character) { return MoveUpLeft(character, 1); }
+		public static bool MoveDownLeft(this ICharacter character, int distance) { return Move(character, distance, 135 / 180d * Math.PI); }
+		public static bool MoveDownLeft(this ICharacter character) { return MoveDownLeft(character, 1); }
+		public static bool MoveDownRight(this ICharacter character, int distance) { return Move(character, distance, 225 / 180d * Math.PI); }
+		public static bool MoveDownRight(this ICharacter character) { return MoveDownRight(character, 1); }
+		public static bool MoveUpRight(this ICharacter character, int distance) { return Move(character, distance, 315 / 180d * Math.PI); }
+		public static bool MoveUpRight(this ICharacter character) { return MoveUpRight(character, 1); }
 
 		public static (int X, int Y) Teleport(this ICharacter character, (int x, int y) position)
 		{
@@ -107,7 +120,9 @@ namespace RogueLikeGame
 			var c = GameManager.Characters
 				.Where(a => a.X == x && a.Y == y)
 				.First();
-			c.TakeDamage(character.Attack);
+			//c.TakeDamage(character.Power);
+			character.Attack(c);
+			System.Diagnostics.Debug.WriteLine($"{c.Symbol}: {c.HP,3} / {c.MaxHP,3}");
 		}
 	}
 }

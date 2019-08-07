@@ -2,14 +2,29 @@ using System;
 
 namespace RogueLikeGame
 {
-	internal class Player : BaseCharacter, IKeyInput, ICharacter
+	internal class Player : BaseCharacter, IKeyInput, IPlayer
 	{
-		public Player() : base(0, 0, '@', 20, 2)
+		public int MaxHunger { get; }
+		private int hunger;
+		public int Hunger
 		{
+			get => this.hunger;
+			private set
+			{
+				if (value < 0) { this.hunger = 0; }
+				else if (value > MaxHunger) { this.hunger = MaxHunger; }
+				else { this.hunger = value; }
+			}
 		}
 
-		public Player(int x, int y, char symbol, int maxHP, int attack) : base(x, y, symbol, maxHP, attack)
+		public Player() : base(0, 0, "Hero", '@', 20, 2)
 		{
+			Hunger = MaxHunger = 690;
+		}
+
+		public Player(int x, int y, string name, char symbol, int maxHP, int maxHunger, int attack) : base(x, y, name, symbol, maxHP, attack)
+		{
+			Hunger = MaxHunger = maxHunger;
 		}
 
 		public override string ToString()
@@ -17,31 +32,42 @@ namespace RogueLikeGame
 			return Symbol.ToString();
 		}
 
-		public void Move(char keyChar)
+		public bool Move(char keyChar)
 		{
+			bool isMove = false;
 			switch (keyChar)
 			{
 				case 'k':
-				case '8': this.MoveUp(); break;
+				case '8': isMove = this.MoveUp(); break;
 				case 'y':
-				case '7': this.MoveUpLeft(); break;
+				case '7': isMove = this.MoveUpLeft(); break;
 				case 'h':
-				case '4': this.MoveLeft(); break;
+				case '4': isMove = this.MoveLeft(); break;
 				case 'b':
-				case '1': this.MoveDownLeft(); break;
+				case '1': isMove = this.MoveDownLeft(); break;
 				case 'j':
-				case '2': this.MoveDown(); break;
+				case '2': isMove = this.MoveDown(); break;
 				case 'n':
-				case '3': this.MoveDownRight(); break;
+				case '3': isMove = this.MoveDownRight(); break;
 				case 'l':
-				case '6': this.MoveRight(); break;
+				case '6': isMove = this.MoveRight(); break;
 				case 'u':
-				case '9': this.MoveUpRight(); break;
+				case '9': isMove = this.MoveUpRight(); break;
 				case '.':
-				case '5':
+				case '5': isMove = this.MoveWait(); break;
 				default:
-					this.MoveWait(); break;
+					break;
 			}
+			if (isMove)
+			{
+				Hunger--;
+			}
+			return isMove;
+		}
+
+		public override void Dead()
+		{
+
 		}
 	}
 }

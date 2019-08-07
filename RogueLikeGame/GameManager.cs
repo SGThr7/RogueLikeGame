@@ -1,10 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace RogueLikeGame
 {
 	internal static class GameManager
 	{
+		[DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+		public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, uint wFlags);
+		public static uint SWP_NOSIZE = 1;
+		public static uint SWP_NOZORDER = 4;
+
 		public static Random random = new Random();
 		public static Player Player { get; private set; }
 		public static List<Enemy> Enemies { get; private set; } = new List<Enemy>();
@@ -13,7 +19,7 @@ namespace RogueLikeGame
 			get
 			{
 				yield return Player;
-				foreach(Enemy enemy in Enemies)
+				foreach (Enemy enemy in Enemies)
 				{
 					yield return enemy;
 				}
@@ -29,6 +35,9 @@ namespace RogueLikeGame
 		public static void Initialize()
 		{
 			Console.CursorVisible = false;
+			Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
+			SetWindowPos(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle,
+				0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 			Player = new Player();
 			MakeMap();
 			Renderer.RenderFull();
@@ -43,10 +52,14 @@ namespace RogueLikeGame
 				{
 					MakeMap();
 				}
-				Player.Move(keyInfo.KeyChar);
-				foreach (var e in Enemies)
-				{
-					e.Move();
+				bool isAction = Player.Move(keyInfo.KeyChar);
+				Renderer.Render(true);
+				if (isAction)
+				{ 
+					foreach (var e in Enemies)
+					{
+						e.Move();
+					}
 				}
 				//if (random.NextDouble() < 1)
 				//{
