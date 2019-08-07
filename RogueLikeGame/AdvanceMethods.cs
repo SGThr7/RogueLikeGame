@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RogueLikeGame
 {
-	static class AdvanceMethods
+	internal static class AdvanceMethods
 	{
 		/// <summary>
 		/// Return indexed items.

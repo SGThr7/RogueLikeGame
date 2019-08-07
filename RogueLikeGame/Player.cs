@@ -2,18 +2,14 @@ using System;
 
 namespace RogueLikeGame
 {
-	class Player : IKeyInput, ICharacter
+	internal class Player : BaseCharacter, IKeyInput, ICharacter
 	{
-		public int X { get; set; } = 0;
-		public int Y { get; set; } = 0;
-		public char Symbol { get; } = '@';
-		public Action Action { get; }
-		public int HP { get; private set; }
-		public int Attack { get; } = 2;
-
-		public Player()
+		public Player() : base(0, 0, '@', 20, 2)
 		{
-			Action = new Action(this);
+		}
+
+		public Player(int x, int y, char symbol, int maxHP, int attack) : base(x, y, symbol, maxHP, attack)
+		{
 		}
 
 		public override string ToString()
@@ -21,34 +17,31 @@ namespace RogueLikeGame
 			return Symbol.ToString();
 		}
 
-		public object Move(char keyChar)
+		public void Move(char keyChar)
 		{
 			switch (keyChar)
 			{
 				case 'k':
-				case '8': return Action.MoveUp();
+				case '8': this.MoveUp(); break;
 				case 'y':
-				case '7': return Action.MoveUpLeft();
+				case '7': this.MoveUpLeft(); break;
 				case 'h':
-				case '4': return Action.MoveLeft();
+				case '4': this.MoveLeft(); break;
 				case 'b':
-				case '1': return Action.MoveDownLeft();
+				case '1': this.MoveDownLeft(); break;
 				case 'j':
-				case '2': return Action.MoveDown();
+				case '2': this.MoveDown(); break;
 				case 'n':
-				case '3': return Action.MoveDownRight();
+				case '3': this.MoveDownRight(); break;
 				case 'l':
-				case '6': return Action.MoveRight();
+				case '6': this.MoveRight(); break;
 				case 'u':
-				case '9': return Action.MoveUpRight();
+				case '9': this.MoveUpRight(); break;
 				case '.':
 				case '5':
 				default:
-					return Action.MoveWait();
+					this.MoveWait(); break;
 			}
 		}
-
-		public int TakeDamage(int damage)
-			=> HP -= damage;
 	}
 }

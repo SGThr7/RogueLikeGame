@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RogueLikeGame
 {
-	static class Renderer
+	internal static class Renderer
 	{
 		private static string buff;
 
@@ -16,19 +16,19 @@ namespace RogueLikeGame
 
 		public static void Render(bool isDiffOnly = false)
 		{
-			var sb = new StringBuilder();
-			Draw(ref sb);
+			var mapData = new StringBuilder();
+			Draw(ref mapData);
 			if (!isDiffOnly)
 			{
-				Render(sb.ToString());
+				Render(mapData.ToString());
 				return;
 			}
 
-			var image = sb.ToString();
+			var image = mapData.ToString();
 			var diffIndexes = new List<int>();
 			if (image.Length != buff.Length)
 			{
-				Render(sb.ToString());
+				Render(mapData.ToString());
 			}
 
 			for (int i = 0; i < image.Length; i++)
@@ -59,29 +59,37 @@ namespace RogueLikeGame
 			buff = image;
 		}
 
-		static void Draw(ref StringBuilder sb)
+		static void Draw(ref StringBuilder mapData)
 		{
-			DrawMapFull(ref sb);
-			DrawEnemys(ref sb);
-			DrawPlayer(ref sb);
+			DrawMapFull(ref mapData);
+			DrawEnemys(ref mapData);
+			DrawPlayer(ref mapData);
+			DrawStatus();
 		}
 
-		static void DrawPlayer(ref StringBuilder sb)
+		static void DrawPlayer(ref StringBuilder mapData)
 		{
 			int index = (MapManager.GetCurrentMapSize().Width + 2) * GameManager.Player.Y + GameManager.Player.X;
-			sb.Remove(index, 1).Insert(index, GameManager.Player.Symbol);
+			mapData.Remove(index, 1).Insert(index, GameManager.Player.Symbol);
 		}
 
-		static void DrawEnemys(ref StringBuilder sb)
+		static void DrawStatus()
+		{
+			Player player = GameManager.Player;
+			Console.SetCursorPosition(3, 39);
+			Console.Write($"HP {player.HP} / {player.MaxHP}");
+		}
+
+		static void DrawEnemys(ref StringBuilder mapData)
 		{
 			foreach (var enemy in GameManager.Enemies)
 			{
 				int index = (MapManager.GetCurrentMapSize().Width + 2) * enemy.Y + enemy.X;
-				sb.Remove(index, 1).Insert(index, enemy.Symbol);
+				mapData.Remove(index, 1).Insert(index, enemy.Symbol);
 			}
 		}
 
-		static void DrawMapFull(ref StringBuilder sb)
+		static void DrawMapFull(ref StringBuilder mapData)
 		{
 			var map = MapManager.CurrentMap;
 			(int width, int height) = map.Size;
@@ -90,10 +98,10 @@ namespace RogueLikeGame
 				for (int x = 0; x < width; x++)
 				{
 					//sb.Append(map.GetVisibleMapSprite(x, y));
-					sb.Append(map.GetMapSprite(x, y));
+					mapData.Append(map.GetMapSprite(x, y));
 				}
 
-				sb.AppendLine();
+				mapData.AppendLine();
 			}
 		}
 	}

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RogueLikeGame
 {
-	static class RouteSearch
+	internal static class RouteSearch
 	{
 		public static void Search((int X, int Y) from, (int X, int Y) to)
 		{

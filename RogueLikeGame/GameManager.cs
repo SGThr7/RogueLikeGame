@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RogueLikeGame
 {
-	static class GameManager
+	internal static class GameManager
 	{
 		public static Random random = new Random();
 		public static Player Player { get; private set; }
@@ -60,7 +60,7 @@ namespace RogueLikeGame
 		private static void MakeMap()
 		{
 			MapManager.Generate();
-			Player.Action.RandomTeleport();
+			Player.RandomTeleport();
 			Enemies = new List<Enemy>();
 			SpawnEnemy();
 			//MapManager.CurrentMap.mapVisible.SetVisible(Player);
@@ -73,7 +73,7 @@ namespace RogueLikeGame
 				Enemies = new List<Enemy>();
 			}
 			var enemy = new Enemy();
-			enemy.Action.RandomTeleport();
+			enemy.RandomTeleport();
 			Enemies.Add(enemy);
 		}
 	}

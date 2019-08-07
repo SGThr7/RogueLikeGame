@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace RogueLikeGame
 {
-	static class MapManager
+	internal static class MapManager
 	{
 		private static readonly List<Map> maps = new List<Map>();
 		public static int CurrentMapNumber => maps.Count;
@@ -43,7 +43,7 @@ namespace RogueLikeGame
 		}
 	}
 
-	class Map
+	internal class Map
 	{
 		public enum Axis
 		{

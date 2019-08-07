@@ -3,21 +3,14 @@ using System.Linq;
 
 namespace RogueLikeGame
 {
-	class Action
+	internal static class Action
 	{
-		private readonly ICharacter character;
-
-		public Action(ICharacter character)
-		{
-			this.character = character;
-		}
-
-		public (int X, int Y) Move(int distance, double angle, bool isSimurate = false)
+		public static (int X, int Y) PreMove(this ICharacter character, int distance, double angle)
 		{
 			int xDiff = -1 * (int)Math.Round(distance * Math.Sin(angle), MidpointRounding.AwayFromZero);
 			int yDiff = -1 * (int)Math.Round(distance * Math.Cos(angle), MidpointRounding.AwayFromZero);
 
-			(int x, int y) = (this.character.X, this.character.Y);
+			(int x, int y) = (character.X, character.Y);
 			Map map = MapManager.CurrentMap;
 			if (!map.GetMapSprite(x + xDiff, y).CanWalk)
 			{
@@ -38,77 +31,83 @@ namespace RogueLikeGame
 			{
 				x += xDiff;
 				y += yDiff;
-
-				bool isAttack = true;
-				bool noCharacter(ICharacter character)
-					=> character.X != x || character.Y != y;
-				foreach (var character in GameManager.Characters)
-				{
-					if (character != this.character)
-					{
-						isAttack &= noCharacter(character);
-					}
-				}
-
-				if (!isSimurate)
-				{
-					if (isAttack)
-					{
-						this.character.X = x;
-						this.character.Y = y;
-					}
-					else
-					{
-						Attack(x, y);
-					}
-				}
 			}
 
 			return (x, y);
-		}
-		public (int X, int Y) MoveWait(bool isSimulate = false) { return Move(0, 0, isSimulate); }
-		public (int X, int Y) MoveUp(int distance, bool isSimulate = false) { return Move(distance, 0, isSimulate); }
-		public (int X, int Y) MoveUp(bool isSimulate = false) { return MoveUp(1, isSimulate); }
-		public (int X, int Y) MoveLeft(int distance, bool isSimulate = false) { return Move(distance, 90 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveLeft(bool isSimulate = false) { return MoveLeft(1, isSimulate); }
-		public (int X, int Y) MoveDown(int distance, bool isSimulate = false) { return Move(distance, 180 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveDown(bool isSimulate = false) { return MoveDown(1, isSimulate); }
-		public (int X, int Y) MoveRight(int distance, bool isSimulate = false) { return Move(distance, 270 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveRight(bool isSimulate = false) { return MoveRight(1, isSimulate); }
-		public (int X, int Y) MoveUpLeft(int distance, bool isSimulate = false) { return Move(distance, 45 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveUpLeft(bool isSimulate = false) { return MoveUpLeft(1, isSimulate); }
-		public (int X, int Y) MoveDownLeft(int distance, bool isSimulate = false) { return Move(distance, 135 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveDownLeft(bool isSimulate = false) { return MoveDownLeft(1, isSimulate); }
-		public (int X, int Y) MoveDownRight(int distance, bool isSimulate = false) { return Move(distance, 225 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveDownRight(bool isSimulate = false) { return MoveDownRight(1, isSimulate); }
-		public (int X, int Y) MoveUpRight(int distance, bool isSimulate = false) { return Move(distance, 315 / 180d * Math.PI, isSimulate); }
-		public (int X, int Y) MoveUpRight(bool isSimulate = false) { return MoveUpRight(1, isSimulate); }
 
-		public (int X, int Y) Teleport((int x, int y) position)
+		}
+
+		public static void Move(this ICharacter character, int distance, double angle)
 		{
-			this.character.X = position.x;
-			this.character.Y = position.y;
+			(int x, int y) = character.PreMove(distance, angle);
+
+			bool isAttack = false;
+			bool noCharacter(ICharacter c, int _x, int _y)
+				=> c.X != _x || c.Y != _y;
+			foreach (var c in GameManager.Characters)
+			{
+				if (c != character)
+				{
+					isAttack |= !noCharacter(c, x, y);
+				}
+				if (isAttack)
+				{
+					break;
+				}
+			}
+
+			if (isAttack)
+			{
+				Attack(character, x, y);
+			}
+			else
+			{
+				character.X = x;
+				character.Y = y;
+			}
+		}
+		public static void MoveWait(this ICharacter character) { Move(character, 0, 0); }
+		public static void MoveUp(this ICharacter character, int distance) { Move(character, distance, 0); }
+		public static void MoveUp(this ICharacter character) { MoveUp(character, 1); }
+		public static void MoveLeft(this ICharacter character, int distance) { Move(character, distance, 90 / 180d * Math.PI); }
+		public static void MoveLeft(this ICharacter character) { MoveLeft(character, 1); }
+		public static void MoveDown(this ICharacter character, int distance) { Move(character, distance, 180 / 180d * Math.PI); }
+		public static void MoveDown(this ICharacter character) { MoveDown(character, 1); }
+		public static void MoveRight(this ICharacter character, int distance) { Move(character, distance, 270 / 180d * Math.PI); }
+		public static void MoveRight(this ICharacter character) { MoveRight(character, 1); }
+		public static void MoveUpLeft(this ICharacter character, int distance) { Move(character, distance, 45 / 180d * Math.PI); }
+		public static void MoveUpLeft(this ICharacter character) { MoveUpLeft(character, 1); }
+		public static void MoveDownLeft(this ICharacter character, int distance) { Move(character, distance, 135 / 180d * Math.PI); }
+		public static void MoveDownLeft(this ICharacter character) { MoveDownLeft(character, 1); }
+		public static void MoveDownRight(this ICharacter character, int distance) { Move(character, distance, 225 / 180d * Math.PI); }
+		public static void MoveDownRight(this ICharacter character) { MoveDownRight(character, 1); }
+		public static void MoveUpRight(this ICharacter character, int distance) { Move(character, distance, 315 / 180d * Math.PI); }
+		public static void MoveUpRight(this ICharacter character) { MoveUpRight(character, 1); }
+
+		public static (int X, int Y) Teleport(this ICharacter character, (int x, int y) position)
+		{
+			character.X = position.x;
+			character.Y = position.y;
 			return position;
 		}
 
-		public (int X, int Y) Teleport(int x, int y)
+		public static (int X, int Y) Teleport(this ICharacter character, int x, int y)
 		{
-			return Teleport(x, y);
+			return Teleport(character, (x, y));
 		}
 
-		public (int X, int Y) RandomTeleport()
+		public static (int X, int Y) RandomTeleport(this ICharacter character)
 		{
 			(int X, int Y) position = MapManager.CurrentMap.GetRandomSpritePoint(MapSprite.Type.Room);
-			return Teleport(position);
+			return Teleport(character, position);
 		}
 
-		public void Attack(int x, int y)
+		public static void Attack(this ICharacter character, int x, int y)
 		{
 			var c = GameManager.Characters
 				.Where(a => a.X == x && a.Y == y)
 				.First();
-			c.TakeDamage(this.character.Attack);
-			System.Diagnostics.Debug.WriteLine("Attacked");
+			c.TakeDamage(character.Attack);
 		}
 	}
 }

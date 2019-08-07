@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RogueLikeGame
 {
-	class MapVisible
+	internal class MapVisible
 	{
 		private readonly bool[] visibleMap;
 		public int Width { get; }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RogueLikeGame
 {
-	class MapSprite : ISprite
+	internal class MapSprite : ISprite
 	{
 		public enum Type
 		{
@@ -64,7 +64,7 @@ namespace RogueLikeGame
 		}
 	}
 
-	class MapSprites
+	internal class MapSprites
 	{
 		private readonly List<MapSprite> mapSprites = new List<MapSprite>();
 		public int UnknownIndex => 0;

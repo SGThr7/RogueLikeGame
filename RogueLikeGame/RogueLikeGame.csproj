@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseCharacter.cs" />
     <Compile Include="AdvanceMethods.cs" />
     <Compile Include="Enemy.cs" />
     <Compile Include="MapVisible.cs" />

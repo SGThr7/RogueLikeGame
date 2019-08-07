@@ -1,27 +1,26 @@
 namespace RogueLikeGame
 {
-	interface IKeyInput
+	internal interface IKeyInput
 	{
-		object Move(char keyInput);
+		void Move(char keyInput);
 	}
 
-	interface IPosition
+	internal interface IPosition
 	{
 		int X { get; set; }
 		int Y { get; set; }
 	}
 
-	interface ICharacter : IPosition, ISprite, IStatus
+	internal interface ICharacter : IPosition, ISprite, IStatus
 	{
-		Action Action { get; }
 	}
 
-	interface ISprite
+	internal interface ISprite
 	{
 		char Symbol { get; }
 	}
 
-	interface IStatus
+	internal interface IStatus
 	{
 		int HP { get; }
 		int Attack { get; }
